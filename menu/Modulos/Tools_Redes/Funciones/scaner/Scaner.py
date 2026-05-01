@@ -67,7 +67,7 @@ class Ui_Dialog(object):
         #ip obtenida del imput_red
         self.label_ip = QtWidgets.QLabel(parent=Dialog)
         self.label_ip.setObjectName("label_ip")
-        self.gridLayout.addWidget(self.label_ip, 4, 1, 1, 4)
+        self.gridLayout.addWidget(self.label_ip, 0, 5, 1, 1) #(self.imput_red, 0, 2, 1, 3)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate

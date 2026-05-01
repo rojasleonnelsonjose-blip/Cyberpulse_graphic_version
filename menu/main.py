@@ -6,6 +6,9 @@ from Modulos.Tools_Cyberpulse import Ui_Dialog as Ui_ToolsCyberpulse
 from Modulos.Tools_Redes.Tool_redes import Ui_Dialog as Ui_ToolRedes
 from Modulos.Tools_Redes.Funciones.scaner.Scaner import Ui_Dialog as Ui_Scaner
 import socket 
+import subprocess
+import os
+
 
 class MainPage(QtWidgets.QWidget):
     def __init__(self):
@@ -110,6 +113,7 @@ class ScanerPage(QtWidgets.QWidget):
         self.ui.exit_s.clicked.connect(QApplication.quit)
         self.ui.Start_s.clicked.connect(self.iniciar_scan)
 
+
     def volver_atras(self):
         self.main_window.cambiar_pagina(self.main_window.network_audit_page)
 
@@ -125,6 +129,8 @@ class ScanerPage(QtWidgets.QWidget):
 
     def volver_atras(self):
         self.main_window.cambiar_pagina(self.main_window.network_audit_page)
+    
+    
 
 
 if __name__ == "__main__":
