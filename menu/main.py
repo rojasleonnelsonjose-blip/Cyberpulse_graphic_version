@@ -1,5 +1,5 @@
 import sys
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QApplication
 from index import Ui_CYBERPULSE
 from Modulos.Tools_Cyberpulse import Ui_Dialog as Ui_ToolsCyberpulse
@@ -8,7 +8,6 @@ from Modulos.Tools_Redes.Funciones.scaner.Scaner import Ui_Dialog as Ui_Scaner
 import socket 
 import subprocess
 import os
-
 
 class MainPage(QtWidgets.QWidget):
     def __init__(self):
@@ -107,12 +106,22 @@ class ScanerPage(QtWidgets.QWidget):
         self.ui.setupUi(self)
         self.main_window = main_window
 
+        # Mostrar IP
         self.ui.label_ip.setText(f"IP local: {obtener_ip_local()}")
 
+        # Crear proceso
+        self.process = QtCore.QProcess(self)
+
+        # Eventos del proceso
+        self.process.started.connect(self.nmap_iniciado)
+        self.process.finished.connect(self.nmap_finalizado)
+        self.process.readyReadStandardOutput.connect(self.leer_salida)
+        self.process.readyReadStandardError.connect(self.leer_error)
+
+        # Botones
         self.ui.Back_s.clicked.connect(self.volver_atras)
         self.ui.exit_s.clicked.connect(QApplication.quit)
         self.ui.Start_s.clicked.connect(self.iniciar_scan)
-
 
     def volver_atras(self):
         self.main_window.cambiar_pagina(self.main_window.network_audit_page)
@@ -124,13 +133,60 @@ class ScanerPage(QtWidgets.QWidget):
         herramienta = "nmap" if self.ui.Nmap.isChecked() else "metasploit"
         modo = "silent" if self.ui.silent.isChecked() else "noisy"
 
-        print(segmento, tipo, herramienta, modo)
+        ruta = "Results"
+        archivo = "scan.txt"
 
+        # Crear carpeta si no existe
+        os.makedirs(ruta, exist_ok=True)
 
-    def volver_atras(self):
-        self.main_window.cambiar_pagina(self.main_window.network_audit_page)
-    
-    
+        if herramienta != "nmap":
+            QtWidgets.QMessageBox.warning(self, "Error", "Solo Nmap está soportado por ahora")
+            return
+
+        # Construir argumentos
+        if tipo == "basic" and modo == "silent":
+            args = ["-sn", segmento, "-oN", f"{ruta}/{archivo}"]
+
+        elif tipo == "basic" and modo == "noisy":
+            args = ["-sV", segmento, "-oN", f"{ruta}/{archivo}"]
+
+        elif tipo == "complete" and modo == "silent":
+            args = ["-sS", "-T2", segmento, "-oN", f"{ruta}/{archivo}"]
+
+        elif tipo == "complete" and modo == "noisy":
+            args = ["-A", "-T4", segmento, "-oN", f"{ruta}/{archivo}"]
+
+        else:
+            QtWidgets.QMessageBox.warning(self, "Error", "Configuración inválida")
+            return
+
+        # Ejecutar Nmap
+        self.process.start("nmap", args)
+
+    # 🔄 Barra en ejecución
+    def nmap_iniciado(self):
+        self.ui.progressBar.setRange(0, 0)
+
+    # ✅ Cuando termina
+    def nmap_finalizado(self):
+        self.ui.progressBar.setRange(0, 100)
+        self.ui.progressBar.setValue(100)
+
+        QtWidgets.QMessageBox.information(
+            self,
+            "Finalizado",
+            "El escaneo terminó correctamente"
+        )
+
+    # 📄 Leer salida
+    def leer_salida(self):
+        salida = self.process.readAllStandardOutput().data().decode(errors="ignore")
+        print(salida)
+
+    # ⚠️ Leer errores
+    def leer_error(self):
+        error = self.process.readAllStandardError().data().decode(errors="ignore")
+        print(error)
 
 
 if __name__ == "__main__":

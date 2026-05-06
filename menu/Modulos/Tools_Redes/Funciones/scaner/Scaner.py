@@ -50,7 +50,7 @@ class Ui_Dialog(object):
         self.gridLayout.addWidget(self.silent, 1, 4, 1, 1)
         #tiempo de espera para el escaneo
         self.progressBar = QtWidgets.QProgressBar(parent=Dialog)
-        self.progressBar.setProperty("value", 97)
+        self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName("progressBar")
         self.gridLayout.addWidget(self.progressBar, 3, 2, 1, 3)
         self.imput_red = QtWidgets.QLineEdit(parent=Dialog)

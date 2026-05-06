@@ -5,6 +5,18 @@ tipo=$2
 herramienta=$3
 modo=$4
 
+# Obtener la ruta del directorio actual y buscar el directorio "CYBERPULSE_APPQT6"
+
+current="$PWD"
+
+while [[ "$(basename "$current")" != "CYBERPULSE_APPQT6" && "$current" != "/" ]]; do
+    current="$(dirname "$current")"
+done
+
+ruta="$current/menu/Modulos/Tools_Redes/Funciones/Results"
+
+echo "$ruta"
+
 echo "Iniciando escaneo..."
 echo "Segmento: $segmento"
 echo "Tipo: $tipo"
@@ -14,21 +26,23 @@ echo "--------------------------------"
 
 if [ "$herramienta" = "nmap" ]; then
 
+    NombreArchivo="nmap_${tipo}_${modo}_${segmento}.txt"
+
     if [ "$tipo" = "basic" ] && [ "$modo" = "silent" ]; then
         echo "Ejecutando Nmap básico silencioso..."
-        nmap -sn "$segmento"
+        nmap -sn "$segmento" -oN "$ruta/$NombreArchivo"
 
     elif [ "$tipo" = "basic" ] && [ "$modo" = "noisy" ]; then
         echo "Ejecutando Nmap básico ruidoso..."
-        nmap -sV "$segmento"
+        nmap -sV "$segmento" -oN "$ruta/$NombreArchivo"
 
     elif [ "$tipo" = "complete" ] && [ "$modo" = "silent" ]; then
         echo "Ejecutando Nmap completo silencioso..."
-        nmap -sS -T2 "$segmento"
+        nmap -sS -T2 "$segmento" -oN "$ruta/$NombreArchivo"
 
     elif [ "$tipo" = "complete" ] && [ "$modo" = "noisy" ]; then
         echo "Ejecutando Nmap completo ruidoso..."
-        nmap -A -T4 "$segmento"
+        nmap -A -T4 "$segmento" -oN "$ruta/$NombreArchivo"
 
     else
         echo "Combinación no válida para Nmap"
