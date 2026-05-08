@@ -8,6 +8,7 @@ from Modulos.Tools_Redes.Funciones.scaner.Scaner import Ui_Dialog as Ui_Scaner
 import socket 
 import subprocess
 import os
+from correo_escaneo_basico_v2 import CorreoEscaneoBasico
 
 class MainPage(QtWidgets.QWidget):
     def __init__(self):
@@ -163,27 +164,38 @@ class ScanerPage(QtWidgets.QWidget):
         # Ejecutar Nmap
         self.process.start("nmap", args)
 
-    # 🔄 Barra en ejecución
+    # Barra en ejecución
     def nmap_iniciado(self):
         self.ui.progressBar.setRange(0, 0)
 
-    # ✅ Cuando termina
+    # Cuando termina
     def nmap_finalizado(self):
         self.ui.progressBar.setRange(0, 100)
         self.ui.progressBar.setValue(100)
 
-        QtWidgets.QMessageBox.information(
-            self,
-            "Finalizado",
-            "El escaneo terminó correctamente"
+        ruta_archivo = "Results/scan.txt"
+
+        correo = CorreoEscaneoBasico(
+            remitente="rojasleonnelsonjose@gmail.com",
+            destinatarios=[
+                "1000733672@teinco.edu.co",
+                "1022397080@teinco.edu.co"
+            ]
         )
 
-    # 📄 Leer salida
+        enviado = correo.enviar_correo_con_informe(ruta_archivo)
+
+        if enviado:
+            QtWidgets.QMessageBox.information(self, "Correo", "Enviado correctamente")
+        else:
+            QtWidgets.QMessageBox.warning(self, "Error", "No se pudo enviar el correo")
+
+    # Leer salida
     def leer_salida(self):
         salida = self.process.readAllStandardOutput().data().decode(errors="ignore")
         print(salida)
 
-    # ⚠️ Leer errores
+    # Leer errores
     def leer_error(self):
         error = self.process.readAllStandardError().data().decode(errors="ignore")
         print(error)
