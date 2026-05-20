@@ -1,4 +1,6 @@
 import sys
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtWidgets import QApplication
 from index import Ui_CYBERPULSE
@@ -8,7 +10,12 @@ from Modulos.Tools_Redes.Funciones.scaner.Scaner import Ui_Dialog as Ui_Scaner
 import socket 
 import subprocess
 import os
+from Modulos.Reports.Report_pdf import ReportePDFNmap
 from correo_escaneo_basico_v2 import CorreoEscaneoBasico
+
+
+
+
 
 class MainPage(QtWidgets.QWidget):
     def __init__(self):
@@ -173,7 +180,25 @@ class ScanerPage(QtWidgets.QWidget):
         self.ui.progressBar.setRange(0, 100)
         self.ui.progressBar.setValue(100)
 
-        ruta_archivo = "Results/scan.txt"
+        ruta_txt = "Results/scan.txt"
+        ruta_pdf = "Results/reporte_nmap.pdf"
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+        ruta_logo = os.path.join(
+            base_dir,
+            "resources",
+            "logo_cyberpulse.png"
+        )
+
+        ruta_logo = os.path.normpath(ruta_logo)
+        reporte = ReportePDFNmap()
+        reporte.generar_pdf_desde_txt(ruta_txt, ruta_pdf, ruta_logo)
+
+        QtWidgets.QMessageBox.information(
+            self,
+            "Reporte generado",
+            "El PDF fue generado correctamente."
+        )
 
         correo = CorreoEscaneoBasico(
             remitente="rojasleonnelsonjose@gmail.com",
@@ -183,7 +208,7 @@ class ScanerPage(QtWidgets.QWidget):
             ]
         )
 
-        enviado = correo.enviar_correo_con_informe(ruta_archivo)
+        enviado = correo.enviar_correo_con_informe(ruta_txt, ruta_pdf)
 
         if enviado:
             QtWidgets.QMessageBox.information(self, "Correo", "Enviado correctamente")
@@ -199,6 +224,7 @@ class ScanerPage(QtWidgets.QWidget):
     def leer_error(self):
         error = self.process.readAllStandardError().data().decode(errors="ignore")
         print(error)
+
 
 
 if __name__ == "__main__":

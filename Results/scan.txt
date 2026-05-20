@@ -1,25 +1,10 @@
-# Nmap 7.99 scan initiated Thu May  7 15:04:06 2026 as: nmap -A -T4 -oN Results/scan.txt 192.168.1.6
+# Nmap 7.99 scan initiated Wed May 20 16:18:34 2026 as: nmap -sS -T2 -oN Results/scan.txt 192.168.1.6
 Nmap scan report for 192.168.1.6
-Host is up (0.00011s latency).
+Host is up (0.00018s latency).
 Not shown: 997 closed tcp ports (reset)
-PORT    STATE SERVICE       VERSION
-135/tcp open  msrpc         Microsoft Windows RPC
-139/tcp open  netbios-ssn   Microsoft Windows netbios-ssn
-445/tcp open  microsoft-ds?
-Device type: general purpose
-Running: Microsoft Windows 11
-OS CPE: cpe:/o:microsoft:windows_11
-OS details: Microsoft Windows 11 24H2 - 25H2
-Network Distance: 0 hops
-Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+PORT    STATE SERVICE
+135/tcp open  msrpc
+139/tcp open  netbios-ssn
+445/tcp open  microsoft-ds
 
-Host script results:
-| smb2-security-mode: 
-|   3.1.1: 
-|_    Message signing enabled and required
-| smb2-time: 
-|   date: 2026-05-07T20:04:19
-|_  start_date: N/A
-
-OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-# Nmap done at Thu May  7 15:04:30 2026 -- 1 IP address (1 host up) scanned in 24.10 seconds
+# Nmap done at Wed May 20 16:25:19 2026 -- 1 IP address (1 host up) scanned in 404.86 seconds
