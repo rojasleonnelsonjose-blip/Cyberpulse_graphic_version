@@ -54,6 +54,33 @@ class ConfiguracionCorreo:
     def __init__(self, ruta=None):
         self.ruta = Path(ruta) if ruta else Path(os.environ.get("LOCALAPPDATA", Path.home())) / "CyberPulse" / "correo.json"
 
+    def cargar_nombre(self):
+        ruta = self.ruta.with_name("perfil.json")
+        if not ruta.exists():
+            return ""
+        try:
+            nombre = json.loads(ruta.read_text(encoding="utf-8"))["nombre"]
+            if not isinstance(nombre, str):
+                raise ValueError("Nombre inválido")
+            return nombre.strip()
+        except (ValueError, KeyError, TypeError) as exc:
+            raise ValueError("No se pudo leer el nombre guardado. Puedes volver a configurarlo.") from exc
+
+    def guardar_nombre(self, nombre):
+        nombre = nombre.strip()
+        if len(nombre) > 60:
+            raise ValueError("El nombre debe tener un máximo de 60 caracteres.")
+        self.ruta.parent.mkdir(parents=True, exist_ok=True)
+        temporal = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=self.ruta.parent, delete=False) as archivo:
+                temporal = Path(archivo.name)
+                json.dump({"nombre": nombre}, archivo, ensure_ascii=False)
+            os.replace(temporal, self.ruta.with_name("perfil.json"))
+        finally:
+            if temporal and temporal.exists():
+                temporal.unlink()
+
     def cargar(self):
         if not self.ruta.exists():
             return {"remitente": "", "clave": "", "destinatarios": []}
