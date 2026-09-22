@@ -5,17 +5,13 @@ from email.message import EmailMessage
 
 class CorreoEscaneoBasico:
 
-    def __init__(self, remitente, destinatarios):
+    def __init__(self, remitente, destinatarios, smtp_password):
         self.remitente = remitente
         self.destinatarios = destinatarios
 
-        self.smtp_password = os.environ.get(
-            'SMTP_APP_PASSWORD',
-            'jualpulbnvmmvmkn'
-        )
-
+        self.smtp_password = smtp_password
         if not self.smtp_password:
-            raise ValueError("No se encontró la variable SMTP_APP_PASSWORD")
+            raise ValueError("Configura la clave de envío del correo")
 
     def enviar_correo_con_informe(self, ruta_archivo, ruta_pdf):
 
@@ -69,7 +65,7 @@ Resumen del escaneo:
                 )
 
             # Enviar correo
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=30) as smtp:
                 smtp.login(self.remitente, self.smtp_password)
                 smtp.send_message(email)
 

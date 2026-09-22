@@ -12,6 +12,8 @@ import subprocess
 import os
 from Modulos.Reports.Report_pdf import ReportePDFNmap
 from correo_escaneo_basico_v2 import CorreoEscaneoBasico
+from configuracion_correo import ConfiguracionCorreo, validar_configuracion
+from ventana_configuracion import VentanaConfiguracionCorreo
 
 
 
@@ -82,6 +84,9 @@ class CyberPulseApp(QtWidgets.QMainWindow):
         self.main_page.ui.Start_i.clicked.connect(self.abrir_tools)
         self.main_page.ui.Informacion.clicked.connect(self.informacion)
         self.main_page.ui.exit_i.clicked.connect(self.close)
+        self.main_page.ui.config_i.setText("Configuración")
+        self.main_page.ui.config_i.setToolTip("Configurar remitente, clave y destinatarios")
+        self.main_page.ui.config_i.clicked.connect(self.abrir_configuracion)
 
         self.cambiar_pagina(self.main_page)
 
@@ -90,6 +95,9 @@ class CyberPulseApp(QtWidgets.QMainWindow):
 
     def abrir_tools(self):
         self.cambiar_pagina(self.tools_page)
+
+    def abrir_configuracion(self):
+        VentanaConfiguracionCorreo(self).exec()
 
     def informacion(self):
         QtWidgets.QMessageBox.information(
@@ -200,12 +208,26 @@ class ScanerPage(QtWidgets.QWidget):
             "El PDF fue generado correctamente."
         )
 
+        try:
+            datos = ConfiguracionCorreo().cargar()
+            validar_configuracion(datos["remitente"], datos["clave"], datos["destinatarios"])
+        except (ValueError, OSError):
+            QtWidgets.QMessageBox.warning(
+                self, "Configura el correo",
+                "El PDF está guardado. Para enviarlo, configura el remitente, la clave y los destinatarios."
+            )
+            if VentanaConfiguracionCorreo(self).exec() != QtWidgets.QDialog.DialogCode.Accepted:
+                return
+            try:
+                datos = ConfiguracionCorreo().cargar()
+            except (ValueError, OSError):
+                QtWidgets.QMessageBox.warning(self, "Correo", "No se pudo leer la configuración guardada.")
+                return
+
         correo = CorreoEscaneoBasico(
-            remitente="rojasleonnelsonjose@gmail.com",
-            destinatarios=[
-                "1000733672@teinco.edu.co",
-                "1022397080@teinco.edu.co"
-            ]
+            remitente=datos["remitente"],
+            destinatarios=datos["destinatarios"],
+            smtp_password=datos["clave"]
         )
 
         enviado = correo.enviar_correo_con_informe(ruta_txt, ruta_pdf)

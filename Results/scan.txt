@@ -1,10 +1,4 @@
-# Nmap 7.99 scan initiated Wed May 20 16:18:34 2026 as: nmap -sS -T2 -oN Results/scan.txt 192.168.1.6
-Nmap scan report for 192.168.1.6
-Host is up (0.00018s latency).
-Not shown: 997 closed tcp ports (reset)
-PORT    STATE SERVICE
-135/tcp open  msrpc
-139/tcp open  netbios-ssn
-445/tcp open  microsoft-ds
-
-# Nmap done at Wed May 20 16:25:19 2026 -- 1 IP address (1 host up) scanned in 404.86 seconds
+# Nmap 7.99 scan initiated Tue Sep 22 16:48:36 2026 as: nmap -sV -oN Results/scan.txt "Segment to be analyzed"
+Failed to resolve "Segment to be analyzed".
+WARNING: No targets were specified, so 0 hosts scanned.
+# Nmap done at Tue Sep 22 16:48:37 2026 -- 0 IP addresses (0 hosts up) scanned in 0.72 seconds
