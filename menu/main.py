@@ -18,6 +18,8 @@ from Modulos.Reports.Report_pdf import ReportePDFNmap
 from correo_escaneo_basico_v2 import CorreoEscaneoBasico
 from configuracion_correo import ConfiguracionCorreo, validar_configuracion
 from ventana_configuracion import VentanaConfiguracionCorreo
+from ventana_pentesting import VentanaPentesting
+from tabla_riesgos import VentanaTablaRiesgos
 
 
 
@@ -39,6 +41,11 @@ class ToolsPage(QtWidgets.QWidget):
 
         self.ui.Back_tc.clicked.connect(self.volver_inicio)
         self.ui.Netwok_audit.clicked.connect(self.abrir_network_audit)
+        self.ui.pushButton_7.setText("Pentesting")
+        self.ui.pushButton_7.clicked.connect(self.abrir_pentesting)
+        if not sys.platform.startswith("linux"):
+            self.ui.pushButton_7.setEnabled(False)
+            self.ui.pushButton_7.setToolTip("Pentesting está disponible en Linux.")
         self.ui.exit_tc.clicked.connect(QApplication.quit)
 
     def volver_inicio(self):
@@ -46,6 +53,13 @@ class ToolsPage(QtWidgets.QWidget):
 
     def abrir_network_audit(self):
         self.main_window.cambiar_pagina(self.main_window.network_audit_page)
+
+    def abrir_pentesting(self):
+        VentanaPentesting(
+            self.main_window,
+            self.main_window.scaner_page.localizar_metasploit,
+            Path(__file__).resolve().parent.parent / "Results",
+        ).exec()
 
 
 class ToolRedes(QtWidgets.QWidget):
@@ -58,12 +72,16 @@ class ToolRedes(QtWidgets.QWidget):
         self.ui.Back_tr.clicked.connect(self.volver_inicio)
         self.ui.exit_tr.clicked.connect(QApplication.quit)
         self.ui.Scaner.clicked.connect(self.abrir_scaner)
+        self.ui.risk_table.clicked.connect(self.abrir_tabla_riesgos)
 
     def volver_inicio(self):
         self.main_window.cambiar_pagina(self.main_window.tools_page)
 
     def abrir_scaner(self):
         self.main_window.cambiar_pagina(self.main_window.scaner_page)
+
+    def abrir_tabla_riesgos(self):
+        VentanaTablaRiesgos(self).exec()
 
 
 class CyberPulseApp(QtWidgets.QMainWindow):
@@ -154,6 +172,9 @@ class ScanerPage(QtWidgets.QWidget):
         self.ui.gridLayout.addWidget(self.puertos, 6, 2, 1, 4)
         self.puertos.setEnabled(False)
         self.ui.Metasploit.toggled.connect(self.puertos.setEnabled)
+        if not sys.platform.startswith("linux"):
+            self.ui.Metasploit.setEnabled(False)
+            self.ui.Metasploit.setToolTip("Disponible al ejecutar CyberPulse en Linux.")
         self.ui.Basic.toggled.connect(lambda basico: self.puertos.setText(PUERTOS_BASICOS if basico else "1-65535"))
         self.salida_visible = QtWidgets.QPlainTextEdit()
         self.salida_visible.setReadOnly(True)
@@ -195,20 +216,12 @@ class ScanerPage(QtWidgets.QWidget):
             herramienta = "nmap" if self.ui.Nmap.isChecked() else "metasploit"
             pausado = self.ui.silent.isChecked()
             programa = "nmap"
-            argumentos_windows = None
             if herramienta == "metasploit":
                 comandos = comandos_escaneo(segmento, self.puertos.text(), pausado)
                 programa = self.localizar_metasploit()
                 if not programa:
                     return
                 args = ["-q", "-x", comandos]
-                if Path(programa).suffix.lower() in (".bat", ".cmd"):
-                    # La ruta elegida se valida antes de pasarla al intérprete de Windows.
-                    if any(c in programa for c in '\"%&|<>^!\r\n'):
-                        raise ValueError("La ruta de Metasploit contiene caracteres no compatibles. Usa una ruta sin caracteres especiales.")
-                    argumentos_windows = f'/d /s /c ""{programa}" -q -x "{comandos}""'
-                    args = []
-                    programa = os.environ.get("COMSPEC", "cmd.exe")
             else:
                 opciones = {
                     ("basic", True): ["-sn"], ("basic", False): ["-sV"],
@@ -229,26 +242,26 @@ class ScanerPage(QtWidgets.QWidget):
             self.salida_visible.clear()
             self.salida_visible.appendPlainText(f"Iniciando {herramienta} sobre {segmento}...")
             self.ui.Start_s.setEnabled(False)
-            if os.name == "nt":
-                self.process.setNativeArguments(argumentos_windows or "")
             self.process.start(programa, args)
         except (ValueError, OSError) as exc:
             self.ui.Start_s.setEnabled(True)
             QtWidgets.QMessageBox.warning(self, "Escaneo", str(exc))
 
     def localizar_metasploit(self):
+        if not sys.platform.startswith("linux"):
+            raise ValueError("Metasploit y Pentesting se ejecutan en Linux. En Windows puedes utilizar los escaneos de Nmap.")
         ajustes = QtCore.QSettings("CyberPulse", "CyberPulse")
         ruta = ajustes.value("metasploit/ejecutable", "")
-        if ruta and Path(ruta).is_file():
+        if ruta and Path(ruta).is_file() and os.access(ruta, os.X_OK) and Path(ruta).name == "msfconsole":
             return ruta
-        ruta = shutil.which("msfconsole") or shutil.which("msfconsole.bat")
+        ruta = shutil.which("msfconsole")
         if ruta:
             return ruta
         QtWidgets.QMessageBox.information(self, "Metasploit no disponible", "No se encontró msfconsole. En Linux/Docker, instala Metasploit en el mismo entorno donde se ejecuta CyberPulse y añade msfconsole al PATH. Si ya tienes una instalación local, selecciona su ejecutable; de lo contrario, cancela.")
-        ruta, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Seleccionar msfconsole", "", "Metasploit (msfconsole msfconsole.exe msfconsole.bat msfconsole.cmd);;Todos los archivos (*)")
+        ruta, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Seleccionar msfconsole", "", "Metasploit (msfconsole);;Todos los archivos (*)")
         if ruta:
-            if Path(ruta).name.lower() not in ("msfconsole", "msfconsole.exe", "msfconsole.bat", "msfconsole.cmd"):
-                raise ValueError("Selecciona el ejecutable msfconsole de Metasploit.")
+            if Path(ruta).name != "msfconsole" or not os.access(ruta, os.X_OK):
+                raise ValueError("Selecciona msfconsole con permiso de ejecución en Linux.")
             ajustes.setValue("metasploit/ejecutable", ruta)
         return ruta
 

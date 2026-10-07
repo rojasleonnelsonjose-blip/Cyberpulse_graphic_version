@@ -1,0 +1,7 @@
+# Nmap 7.99 scan initiated Wed Sep 23 20:09:46 2026 as: nmap -sn -oN C:\\Users\\rojas\\Desktop\\universidad\\CYBERPULSE_APPQT6\\Results\\nmap_20260923_200946_219716.txt 172.20.10.0/24
+Nmap scan report for 172.20.10.1
+Host is up (0.013s latency).
+MAC Address: BA:22:0C:47:49:64 (Unknown)
+Nmap scan report for 172.20.10.2
+Host is up.
+# Nmap done at Wed Sep 23 20:13:02 2026 -- 256 IP addresses (2 hosts up) scanned in 196.21 seconds

@@ -1,0 +1,4 @@
+# Nmap 7.99 scan initiated Wed Sep 23 19:24:50 2026 as: nmap -sn -oN C:\\Users\\rojas\\Desktop\\universidad\\CYBERPULSE_APPQT6\\Results\\nmap_20260923_192449_908202.txt 172.20.10.2
+Nmap scan report for 172.20.10.2
+Host is up.
+# Nmap done at Wed Sep 23 19:24:50 2026 -- 1 IP address (1 host up) scanned in 0.68 seconds
