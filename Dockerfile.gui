@@ -1,0 +1,16 @@
+FROM cyberpulse:gui
+
+
+USER root
+
+
+RUN python3 -m pip install --no-cache-dir \
+    reportlab \
+    cryptography
+
+
+USER cyberpulse
+
+
+WORKDIR /app/menu
+

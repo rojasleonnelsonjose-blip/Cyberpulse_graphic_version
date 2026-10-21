@@ -1,0 +1,6 @@
+# Nmap 7.93 scan initiated Wed Oct 21 03:49:21 2026 as: /usr/bin/nmap -sn -oN /app/Results/nmap_20261021_034921_039283.txt 172.17.0.0/24
+Nmap scan report for 172.17.0.1
+Host is up (0.0024s latency).
+Nmap scan report for a47e5b2e9444 (172.17.0.2)
+Host is up (0.0017s latency).
+# Nmap done at Wed Oct 21 03:49:24 2026 -- 256 IP addresses (2 hosts up) scanned in 3.06 seconds

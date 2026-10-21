@@ -66,9 +66,11 @@ class VentanaConfiguracionCorreo(QtWidgets.QDialog):
         except ValueError as exc:
             self.estado.setText(str(exc))
             return
-        except OSError:
-            self.estado.setText("No se pudo guardar la configuración. Comprueba los permisos de tu usuario de Windows.")
-            return
+        except OSError as exc:
+         self.estado.setText(
+         f"No se pudo guardar la configuración: {exc}"
+        )
+         return
         self.nombre_guardado.emit(self.nombre.text().strip() or "usuario")
         QtWidgets.QMessageBox.information(self, "Configuración", "Configuración guardada correctamente.")
         self.accept()

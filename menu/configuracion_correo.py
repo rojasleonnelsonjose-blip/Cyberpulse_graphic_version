@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import tempfile
 
+from cryptography.fernet import Fernet, InvalidToken
 
 def validar_configuracion(remitente, clave, destinatarios):
     remitente = remitente.strip()
@@ -22,11 +23,82 @@ def validar_configuracion(remitente, clave, destinatarios):
     if not destinatarios or any(not re.fullmatch(patron, d) for d in destinatarios):
         raise ValueError("Introduce al menos un destinatario y revisa sus direcciones.")
     return {"remitente": remitente, "clave": clave, "destinatarios": destinatarios}
+    
+def _obtener_clave_fernet(directorio, crear=False):
+    directorio = Path(directorio)
+    archivo_clave = directorio / "fernet.key"
 
 
-def _proteger(datos, descifrar=False):
+    if archivo_clave.exists():
+        return archivo_clave.read_bytes()
+
+
+    if not crear:
+        raise OSError(
+            "No se encontró la clave de cifrado de Cyberpulse."
+        )
+
+
+    directorio.mkdir(
+        parents=True,
+        exist_ok=True,
+        mode=0o700
+    )
+
+
+    try:
+        descriptor = os.open(
+            archivo_clave,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+            0o600
+        )
+    except FileExistsError:
+        return archivo_clave.read_bytes()
+
+
+    with os.fdopen(descriptor, "wb") as archivo:
+        clave = Fernet.generate_key()
+        archivo.write(clave)
+
+
+    return clave
+
+def _proteger(datos, descifrar=False, directorio=None):
+    # Si estamos ejecutando Cyberpulse en Linux
     if os.name != "nt":
-        raise OSError("El almacenamiento seguro de la clave requiere Windows.")
+
+
+        if directorio is None:
+            raise ValueError(
+                "Debe indicarse el directorio de configuración."
+            )
+
+
+        # Obtener la clave de cifrado
+        clave = _obtener_clave_fernet(
+            directorio,
+            crear=not descifrar
+        )
+
+
+        cifrador = Fernet(clave)
+
+
+        # Descifrar la contraseña guardada
+        if descifrar:
+            try:
+                return cifrador.decrypt(datos)
+            except InvalidToken as exc:
+                raise ValueError(
+                    "No se pudo descifrar la contraseña."
+                ) from exc
+
+
+        # Cifrar una nueva contraseña
+        return cifrador.encrypt(datos)
+
+
+    # A partir de aquí continúa el código original de Windows
 
     class Blob(ctypes.Structure):
         _fields_ = [("size", wintypes.DWORD), ("data", ctypes.POINTER(ctypes.c_ubyte))]
@@ -86,14 +158,23 @@ class ConfiguracionCorreo:
             return {"remitente": "", "clave": "", "destinatarios": []}
         try:
             datos = json.loads(self.ruta.read_text(encoding="utf-8"))
-            clave = _proteger(base64.b64decode(datos["clave_protegida"], validate=True), True).decode("utf-8")
+            clave = _proteger(
+             base64.b64decode(datos["clave_protegida"], validate=True),
+             descifrar=True,
+             directorio=self.ruta.parent
+            ).decode("utf-8")
             return validar_configuracion(datos["remitente"], clave, datos["destinatarios"])
         except Exception as exc:
             raise ValueError("No se pudo leer la configuración de correo. Vuelve a introducir los datos y guárdalos.") from exc
 
     def guardar(self, remitente, clave, destinatarios):
         datos = validar_configuracion(remitente, clave, destinatarios)
-        datos["clave_protegida"] = base64.b64encode(_proteger(datos.pop("clave").encode("utf-8"))).decode("ascii")
+        datos["clave_protegida"] = base64.b64encode(
+         _proteger(
+             datos.pop("clave").encode("utf-8"),
+             directorio=self.ruta.parent
+         )
+).decode("ascii")
         self.ruta.parent.mkdir(parents=True, exist_ok=True)
         temporal = None
         try:

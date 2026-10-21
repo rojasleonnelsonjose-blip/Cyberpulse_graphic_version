@@ -1,0 +1,8 @@
+# Nmap 7.93 scan initiated Wed Oct 21 03:52:08 2026 as: /usr/bin/nmap -sV -oN /app/Results/nmap_20261021_035208_273414.txt 172.17.0.2
+Nmap scan report for a47e5b2e9444 (172.17.0.2)
+Host is up (0.000053s latency).
+All 1000 scanned ports on a47e5b2e9444 (172.17.0.2) are in ignored states.
+Not shown: 1000 closed tcp ports (conn-refused)
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Wed Oct 21 03:52:08 2026 -- 1 IP address (1 host up) scanned in 0.60 seconds
