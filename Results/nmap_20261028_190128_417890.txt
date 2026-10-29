@@ -1,0 +1,2 @@
+# Nmap 7.93 scan initiated Wed Oct 28 19:01:28 2026 as: /usr/bin/nmap -sn -oN /app/Results/nmap_20261028_190128_417890.txt 192.168.56.1
+# Nmap done at Wed Oct 28 19:01:31 2026 -- 1 IP address (0 hosts up) scanned in 3.04 seconds

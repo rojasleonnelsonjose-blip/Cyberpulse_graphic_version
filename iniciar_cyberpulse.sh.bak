@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e
+
+
+CONTENEDOR="cyberpulse-dev-v4"
+
+
+echo "=================================="
+echo "       INICIANDO CYBERPULSE"
+echo "=================================="
+
+
+# Verificar que Docker esté disponible
+if ! docker info >/dev/null 2>&1; then
+    echo "[ERROR] Docker no está disponible."
+    exit 1
+fi
+
+
+# Verificar que existe el contenedor
+if ! docker container inspect "$CONTENEDOR" >/dev/null 2>&1; then
+    echo "[ERROR] No existe el contenedor $CONTENEDOR"
+    exit 1
+fi
+
+
+# Iniciar el contenedor solo si está detenido
+if [ "$(docker inspect -f '{{.State.Running}}' "$CONTENEDOR")" != "true" ]; then
+    echo "[INFO] Iniciando contenedor..."
+    docker start "$CONTENEDOR"
+else
+    echo "[OK] Contenedor en ejecución."
+fi
+# Comprobar que sigue activo
+if [ "$(docker inspect -f '{{.State.Running}}' "$CONTENEDOR")" != "true" ]; then
+    echo "[ERROR] El contenedor no permanece activo."
+    exit 1
+fi
+echo "[INFO] Ejecutando CYBERPULSE..."
+# Iniciar interfaz grafica
+docker exec \
+    -e DISPLAY="$DISPLAY" \
+    -e XAUTHORITY=/tmp/cyberpulse.Xauthority \
+    -w /app/menu \
+    "$CONTENEDOR" \
+    python3 main.py

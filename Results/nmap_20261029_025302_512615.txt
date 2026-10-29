@@ -1,0 +1,8 @@
+# Nmap 7.93 scan initiated Thu Oct 29 02:53:02 2026 as: /usr/bin/nmap -sn -oN /app/Results/nmap_20261029_025302_512615.txt 192.168.1.0/24
+Nmap scan report for _gateway (192.168.1.1)
+Host is up (0.0045s latency).
+Nmap scan report for 192.168.1.14
+Host is up (0.24s latency).
+Nmap scan report for ubunt (192.168.1.34)
+Host is up (0.0023s latency).
+# Nmap done at Thu Oct 29 02:53:19 2026 -- 256 IP addresses (3 hosts up) scanned in 16.96 seconds
